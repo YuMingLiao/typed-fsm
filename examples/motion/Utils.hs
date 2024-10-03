@@ -14,6 +14,7 @@ import SDL
 import SDL.Font (Font)
 import qualified SDL.Font as Font
 import Type
+import Data.List (foldl')
 
 type CharCache = HashMap Char Texture
 type CharCacheRef = IORef CharCache
