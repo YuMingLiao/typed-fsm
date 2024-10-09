@@ -50,10 +50,21 @@
           };
 
           haskellProjects.default = {
-            # The base package set representing a specific GHC version.
-            # By default, this is pkgs.haskellPackages.
-            # You may also create your own. See https://community.flake.parts/haskell-flake/package-set
             basePackages = config.haskellProjects.ghc9101.outputs.finalPackages;
+            projectRoot = with nixpkgs-unstable.lib.fileset;
+              builtins.toString( toSource {
+                root = ./.;
+                fileset = unions [
+                  ./ATM
+                  ./data
+                  ./examples.cabal
+                  ./motion
+                  ./turnstile
+                  ./CHANGELOG.md
+                  ./LICENSE
+                ];
+                #difference ./. (maybeMissing ./result);
+              });
            devShell = {
             };
           };
