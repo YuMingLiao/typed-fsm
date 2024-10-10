@@ -1,26 +1,23 @@
 {
   inputs = rec {
     # typed-fsm seems using ghc9.10
-    nixpkgs-unstable.follows = "common/nixpkgs";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    haskell-flake.url = "github:srid/haskell-flake";
     typed-fsm.url = "github:YuMingLiao/typed-fsm";
+    typed-fsm.inputs.flake-parts.follows = "common/flake-parts";
+    typed-fsm.inputs.haskell-flake.follows = "common/haskell-flake";
     common.url = "github:YuMingLiao/common";
+    nixpkgs.follows = "common/nixpkgs";
   };
   outputs =
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
-      flake-parts,
-      haskell-flake,
       typed-fsm,
       common,
       ...
     }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs-unstable.lib.systems.flakeExposed;
-      imports = [ inputs.haskell-flake.flakeModule ];
+    common.inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = import common.inputs.systems;
+      imports = [ common.inputs.haskell-flake.flakeModule ];
       perSystem =
         {
           self',
@@ -29,13 +26,7 @@
           ...
         }:
         {
-          haskellProjects.ghc9101 = 
-            let pkgs = common.legacyPackages.x86_64-linux;
-            in
-            with pkgs.haskell.lib;
-            with pkgs.lib.trivial;
-            {
-            basePackages = pipe pkgs.haskell.packages.ghc9101 [noHaddocks noChecks];
+          haskellProjects.default = {
             packages = {
               typed-fsm.source = typed-fsm;
               th-desugar.source = "1.17";
@@ -46,11 +37,8 @@
               sdl2.jailbreak = true;
             };
  
-          };
-
-          haskellProjects.default = {
             basePackages = config.haskellProjects.ghc9101.outputs.finalPackages;
-            projectRoot = with nixpkgs-unstable.lib.fileset;
+            projectRoot = with common.inputs.nixpkgs.lib.fileset;
               builtins.toString( toSource {
                 root = ./.;
                 fileset = unions [
