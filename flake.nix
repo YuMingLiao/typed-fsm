@@ -1,23 +1,21 @@
 {
-  inputs = rec {
-    # typed-fsm seems using ghc9.10
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
     haskell-flake.url = "github:srid/haskell-flake";
-    mylib.url = "git+file:///home/nixos/mylib";
+    # typed-fsm seems using ghc9.10, thus nixpkgs-unstable
+    common.url = "github:YuMingLiao/common";
   };
   outputs =
     inputs@{
       self,
       nixpkgs,
-      nixpkgs-unstable,
       flake-parts,
       haskell-flake,
-      mylib,
+      common,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs-unstable.lib.systems.flakeExposed;
+      systems = nixpkgs.lib.systems.flakeExposed;
       imports = [ inputs.haskell-flake.flakeModule ];
       perSystem =
         {
@@ -27,28 +25,25 @@
           ...
         }:
         {
-          haskellProjects.ghc9101 = 
-            let pkgs = nixpkgs-unstable.legacyPackages.x86_64-linux.extend mylib.overlay.default;
+          haskellProjects.ghc9101 =
+            let
+              pkgs = common.legacyPackages.x86_64-linux;
             in
             with pkgs.haskell.lib;
             with pkgs.lib.trivial;
             {
-            basePackages = pipe pkgs.haskell.packages.ghc9101 [noHaddocks noChecks];
-          };
+              basePackages = pipe pkgs.haskell.packages.ghc9101 [
+                noHaddocks
+                noChecks
+              ];
+            };
 
           haskellProjects.default = {
-            # The base package set representing a specific GHC version.
-            # By default, this is pkgs.haskellPackages.
-            # You may also create your own. See https://community.flake.parts/haskell-flake/package-set
             basePackages = config.haskellProjects.ghc9101.outputs.finalPackages;
             packages = {
               th-desugar.source = "1.17";
               singletons-th.source = "3.4";
               singletons-base.source = "3.4";
-            };
-            settings = {
-            };
-            devShell = {
             };
           };
 

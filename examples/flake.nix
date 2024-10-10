@@ -1,12 +1,11 @@
 {
   inputs = rec {
     # typed-fsm seems using ghc9.10
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-unstable.follows = "common/nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
     haskell-flake.url = "github:srid/haskell-flake";
-    mylib.url = "git+file:///home/nixos/mylib";
-    typed-fsm.url = "git+file:///home/nixos/fix/typed-fsm";
-    typed-fsm.flake = false;
+    typed-fsm.url = "github:YuMingLiao/typed-fsm";
+    common.url = "github:YuMingLiao/common";
   };
   outputs =
     inputs@{
@@ -15,8 +14,8 @@
       nixpkgs-unstable,
       flake-parts,
       haskell-flake,
-      mylib,
       typed-fsm,
+      common,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
@@ -31,7 +30,7 @@
         }:
         {
           haskellProjects.ghc9101 = 
-            let pkgs = nixpkgs-unstable.legacyPackages.x86_64-linux.extend mylib.overlay.default;
+            let pkgs = common.legacyPackages.x86_64-linux;
             in
             with pkgs.haskell.lib;
             with pkgs.lib.trivial;
