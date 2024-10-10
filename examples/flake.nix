@@ -2,9 +2,7 @@
   inputs = rec {
     # typed-fsm seems using ghc9.10
     typed-fsm.url = "github:YuMingLiao/typed-fsm";
-    typed-fsm.inputs.flake-parts.follows = "common/flake-parts";
-    typed-fsm.inputs.haskell-flake.follows = "common/haskell-flake";
-    common.url = "github:YuMingLiao/common";
+    common.follows = "typed-fsm/common";
     nixpkgs.follows = "common/nixpkgs";
   };
   outputs =
@@ -15,9 +13,7 @@
       common,
       ...
     }:
-    common.inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import common.inputs.systems;
-      imports = [ common.inputs.haskell-flake.flakeModule ];
+    common.lib.mkFlake { inherit inputs; } {
       perSystem =
         {
           self',
